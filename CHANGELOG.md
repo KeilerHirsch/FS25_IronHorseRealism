@@ -2,6 +2,16 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.0.1] - 2026-07-11 — Foundation hotfix
+
+### Fixed
+- **Duplicate specialization registration.** `TypeManager.finalizeTypes` can run
+  more than once (base types + map); the per-type guard now matches the
+  mod-prefixed specialization name, so the spec is added exactly once instead of
+  spamming "Specialization already exists" errors for every vehicle type.
+- Removed the unused HUD-toggle action binding (it was not wired yet and only
+  produced a missing-l10n warning).
+
 ## [0.1.0.0] - 2026-07-11 — Foundation
 
 ### Added

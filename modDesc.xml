@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="108">
     <author>KeilerHirsch</author>
-    <version>0.1.0.0</version>
+    <version>0.1.0.1</version>
     <title>
         <en>Iron Horse Realism</en>
         <de>Iron Horse Realism</de>
@@ -23,12 +23,4 @@ Dieser Mod ERSETZT separate Verschleiss-/Fahrhilfe-/Reifendruck-Mods und hat tec
     <extraSourceFiles>
         <sourceFile filename="scripts/IronHorseRealism.lua"/>
     </extraSourceFiles>
-    <actions>
-        <action name="IRONHORSE_HUD_TOGGLE" axisType="HALF"/>
-    </actions>
-    <inputBinding>
-        <actionBinding action="IRONHORSE_HUD_TOGGLE">
-            <binding device="KB_MOUSE_DEFAULT" input="KEY_rctrl KEY_h"/>
-        </actionBinding>
-    </inputBinding>
 </modDesc>
