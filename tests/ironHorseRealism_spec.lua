@@ -18,33 +18,38 @@ local function loadCore()
     dofile("scripts/modules/EngineStallModule.lua")
 end
 
-describe("EngineStallModule.updateOverload (pure integrator)", function()
+describe("EngineStallModule.updateOverload (two-phase integrator)", function()
     loadCore()
     local CFG = _G.EngineStallModule.CFG
 
-    it("stalls after sustained full overload", function()
-        local acc, stall = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 2500, CFG)
-        assert.is_true(acc >= 1.0)
-        assert.is_true(stall)
+    it("stalls only after the full stall window of sustained overload", function()
+        local acc, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 4.0, CFG)
+        assert.is_true(acc >= CFG.STALL_SECONDS)
+        assert.are.equal("stall", phase)
     end)
 
-    it("does not stall on a short overload burst", function()
-        local acc, stall = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 1000, CFG)
-        assert.is_true(acc < 1.0)
-        assert.is_false(stall)
+    it("struggles (audible labor) before it stalls", function()
+        local _, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 2.0, CFG)
+        assert.are.equal("struggle", phase) -- past STRUGGLE_SECONDS, before STALL_SECONDS
     end)
 
-    it("lugging (low rpm + high load) stalls faster than plain overload", function()
-        local accLug = _G.EngineStallModule.updateOverload(0, 0.9, 0.2, 1500, CFG)
-        local accOvl = _G.EngineStallModule.updateOverload(0, 0.9, 0.8, 1500, CFG)
-        -- at load 0.9 (< OVERLOAD_LOAD) only the lugging case accumulates
+    it("no phase yet on a short overload burst", function()
+        local _, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 1.0, CFG)
+        assert.are.equal("none", phase)
+    end)
+
+    it("lugging (low rpm + high load) fills faster than plain sub-overload", function()
+        -- load 0.88 < OVERLOAD_LOAD (0.90): only the lugging case accumulates
+        local accLug = _G.EngineStallModule.updateOverload(0, 0.88, 0.2, 1.5, CFG)
+        local accOvl = _G.EngineStallModule.updateOverload(0, 0.88, 0.8, 1.5, CFG)
         assert.is_true(accLug > accOvl)
+        assert.are.equal(0, accOvl)
     end)
 
     it("bleeds off and clamps at zero when load drops", function()
-        local acc, stall = _G.EngineStallModule.updateOverload(0.5, 0.5, 0.8, 5000, CFG)
+        local acc, phase = _G.EngineStallModule.updateOverload(2.0, 0.5, 0.8, 5.0, CFG)
         assert.are.equal(0, acc)
-        assert.is_false(stall)
+        assert.are.equal("none", phase)
     end)
 end)
 

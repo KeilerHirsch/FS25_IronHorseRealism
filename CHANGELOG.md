@@ -2,6 +2,22 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.1.0] - 2026-07-12 — engineStall: struggle-then-stall
+
+### Changed
+- The engine no longer dies instantly under overload. It now runs in **two
+  phases**: it first **audibly labors** (bogs down under sustained overload for
+  ~1.5 s+) and only **stalls** if the overload continues past a grace window
+  (~2.5 s of struggling). Feels like a real diesel fighting the load, not a
+  hard cut. Overload threshold lowered to 0.90 so heavy pulls register.
+- HUD now shows the phase: normal load → overload warning → "Motor quaelt sich".
+
+### Notes
+- Rough tuning pass (thresholds are first estimates, fine-tuning to follow).
+- Fine-tuning TODO: actively drop power during the struggle phase for a louder
+  bog-down (`Motorized:getMotor():setAccelerationLimit`) and optional exhaust
+  smoke; left out here until in-game calibration.
+
 ## [0.1.0.2] - 2026-07-12 — Critical fix: spec table + join crash
 
 ### Fixed
