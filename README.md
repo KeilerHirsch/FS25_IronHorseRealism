@@ -1,5 +1,8 @@
 # Iron Horse Realism (FS25)
 
+> [!IMPORTANT]
+> Enjoying the mod? You can support development on **[Ko-fi](https://ko-fi.com/keilerhirsch)** ☕ — please mention *Iron Horse Realism* so I know what to keep building.
+
 An original, from-scratch **vehicle realism framework** for Farming Simulator 25.
 It unifies what today needs several separate mods — engine health, drivetrain,
 tire pressure, electrical, dirt/visuals and a field-repair toolbox — into **one

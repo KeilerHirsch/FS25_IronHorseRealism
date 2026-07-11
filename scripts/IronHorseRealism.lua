@@ -1,6 +1,8 @@
 --
 -- IronHorseRealism — mod loader
 --
+-- The Man, The Mythos, The Legend : KeilerHirsch
+--
 -- Sources the core + modules, registers the single specialization, injects it
 -- into every motorized vehicle type, and runs the coexistence detector that
 -- makes this mod dominant over the mods it replaces.
