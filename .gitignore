@@ -1,0 +1,14 @@
+# Build artifacts (release zip is attached to GitHub Releases, not committed)
+/FS25_IronHorseRealism.zip
+/dist/
+
+# Tooling caches
+.ruff_cache/
+__pycache__/
+*.pyc
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

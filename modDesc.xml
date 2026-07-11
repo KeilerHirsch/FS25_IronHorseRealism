@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="108">
+    <author>KeilerHirsch</author>
+    <version>0.1.0.0</version>
+    <title>
+        <en>Iron Horse Realism</en>
+        <de>Iron Horse Realism</de>
+    </title>
+    <description>
+        <en><![CDATA[Iron Horse Realism is an original, from-scratch vehicle realism framework for Farming Simulator 25. It unifies engine health, drivetrain, tire pressure, electrical, dirt/visuals and a field-repair toolbox into ONE coherent drivetrain chain with ONE HUD.
+
+Foundation release (0.1.x): modular core only. Features are added as self-contained modules.
+
+This mod REPLACES separate wear / drive-assist / tire-pressure mods and takes technical precedence over them when present. Values are grounded in real manufacturer data. Designed for dedicated-server multiplayer.]]></en>
+        <de><![CDATA[Iron Horse Realism ist ein eigenstaendiges, von Grund auf geschriebenes Fahrzeug-Realismus-Framework fuer Farming Simulator 25. Es vereint Motorzustand, Antriebsstrang, Reifendruck, Elektrik, Schmutz/Optik und einen Behelfsreparatur-Werkzeugkasten zu EINER kohaerenten Antriebsstrang-Kette mit EINEM HUD.
+
+Fundament-Release (0.1.x): nur der modulare Kern. Features kommen als eigenstaendige Module dazu.
+
+Dieser Mod ERSETZT separate Verschleiss-/Fahrhilfe-/Reifendruck-Mods und hat technischen Vorrang vor ihnen, wenn sie geladen sind. Werte beruhen auf realen Herstellerdaten. Fuer Dedicated-Server-Mehrspieler ausgelegt.]]></de>
+    </description>
+    <iconFilename>icon_ironHorseRealism.dds</iconFilename>
+    <multiplayer supported="true"/>
+    <extraSourceFiles>
+        <sourceFile filename="scripts/IronHorseRealism.lua"/>
+    </extraSourceFiles>
+    <actions>
+        <action name="IRONHORSE_HUD_TOGGLE" axisType="HALF"/>
+    </actions>
+    <inputBinding>
+        <actionBinding action="IRONHORSE_HUD_TOGGLE">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_rctrl KEY_h"/>
+        </actionBinding>
+    </inputBinding>
+</modDesc>

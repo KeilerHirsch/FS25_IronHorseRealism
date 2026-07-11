@@ -1,0 +1,36 @@
+# Changelog
+
+Format based on [Keep a Changelog](https://keepachangelog.com/).
+
+## [0.1.0.0] - 2026-07-11 — Foundation
+
+### Added
+- **Modular core (the extensible backbone).** One vehicle specialization
+  (`ironHorseRealism`) dispatches all lifecycle events to a registry of feature
+  modules. Adding a feature = registering a module; the core never changes.
+  - `IronHorseModule` — module contract with safe-default lifecycle hooks.
+  - `IronHorseModuleRegistry` — ordered, deduped module registry.
+  - `IronHorseSpecialization` — the dispatch seam (load/update/read+write stream/
+    save/draw), injected into every motorized vehicle type.
+- `IronHorseSyncEvent` — one generic server-authoritative state-sync event for
+  modules whose state the engine does not replicate.
+- `IronHorseRealData` — single source of real-world values (battery, engine
+  temperatures, tire pressure), grounded in real data.
+- `IronHorseHud` — one unified HUD; modules push lines/warnings into a shared frame.
+- `IronHorseConfig` — deliberately minimal, operation-locked settings.
+- **First feature module — `engineStall`:** soft-stall under overload. Sustained
+  full engine load or lugging (low rpm + high load) stalls the engine
+  (server-authoritative via `stopMotor`, engine-synced to all clients), with a
+  brief no-restart cooldown and a live HUD load indicator.
+- **Coexistence detector:** takes technical precedence over the mods it
+  replaces (ADS / EnhancedVehicle / VariableTirePressure) when present, and
+  flags them loudly — not just a readme note.
+- Gold-standard harness: `.luacheckrc`, busted unit tests, `build.sh`
+  (root-`modDesc` zip), proprietary source-available `LICENSE`.
+
+### Notes
+- Foundation release — the core + one vertical-slice feature. Further modules
+  (engineHealth, drivetrain, tires, electrical, visualDirt, toolbox) plug into
+  this backbone.
+- Core pure-logic verified 13/13 via a real Lua runtime; in-game behaviour to be
+  verified on a live MP server.
