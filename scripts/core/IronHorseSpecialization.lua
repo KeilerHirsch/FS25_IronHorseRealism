@@ -28,6 +28,10 @@ end
 
 function IronHorseSpecialization:onLoad(savegame)
     local spec = self[SPEC]
+    if spec == nil then
+        Logging.warning("[IronHorseRealism] spec table missing on '%s' - vehicle skipped.", tostring(self.configFileName))
+        return
+    end
     spec.modules = IronHorseModuleRegistry.getSupported(self)
     spec.state = {}
     for _, m in ipairs(spec.modules) do
@@ -42,7 +46,7 @@ end
 
 function IronHorseSpecialization:onUpdateTick(dt)
     local spec = self[SPEC]
-    if spec.modules == nil then
+    if spec == nil or spec.modules == nil then
         return
     end
     local isServer = g_currentMission ~= nil and g_currentMission:getIsServer()
@@ -53,7 +57,7 @@ end
 
 function IronHorseSpecialization:onWriteStream(streamId, connection)
     local spec = self[SPEC]
-    if spec.modules == nil then
+    if spec == nil or spec.modules == nil then
         return
     end
     for _, m in ipairs(spec.modules) do
@@ -63,7 +67,7 @@ end
 
 function IronHorseSpecialization:onReadStream(streamId, connection)
     local spec = self[SPEC]
-    if spec.modules == nil then
+    if spec == nil or spec.modules == nil then
         return
     end
     for _, m in ipairs(spec.modules) do
@@ -73,7 +77,7 @@ end
 
 function IronHorseSpecialization:saveToXMLFile(xmlFile, key, _usedModNames)
     local spec = self[SPEC]
-    if spec.modules == nil then
+    if spec == nil or spec.modules == nil then
         return
     end
     for _, m in ipairs(spec.modules) do
@@ -83,7 +87,7 @@ end
 
 function IronHorseSpecialization:onDraw(_isActiveForInput, _isActiveForInputIgnoreSelection, _isSelected)
     local spec = self[SPEC]
-    if spec.modules == nil then
+    if spec == nil or spec.modules == nil then
         return
     end
     -- Only the vehicle the local player is actually in draws the unified HUD.

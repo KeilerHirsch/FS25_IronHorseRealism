@@ -2,6 +2,18 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.0.2] - 2026-07-12 — Critical fix: spec table + join crash
+
+### Fixed
+- **Specialization was registered under a mod-prefixed name**, so the per-vehicle
+  spec table `self.spec_ironHorseRealism` was never created — every update tick
+  threw `attempt to index nil with 'modules'`, and the same nil access in
+  `onWriteStream` **broke multiplayer client joins**. Now the spec is inserted
+  under its plain name directly into the vehicle type (mirroring the proven ADS
+  approach), so the spec table exists and the accessor resolves.
+- Added nil-guards to every specialization handler as a safety net so a missing
+  spec table can never crash the update loop or a client join again.
+
 ## [0.1.0.1] - 2026-07-11 — Foundation hotfix
 
 ### Fixed

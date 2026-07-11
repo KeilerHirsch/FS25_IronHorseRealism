@@ -7,7 +7,7 @@
 --
 
 IronHorseRealism = {}
-IronHorseRealism.VERSION = "0.1.0.1"
+IronHorseRealism.VERSION = "0.1.0.2"
 IronHorseRealism.SPEC_NAME = "ironHorseRealism"
 
 local modDirectory = g_currentModDirectory
@@ -37,23 +37,22 @@ end
 -- TypeManager.finalizeTypes, so all base + mod types exist).
 function IronHorseRealism.registerSpecializationToVehicles()
     local specName = IronHorseRealism.SPEC_NAME
-    local suffix = "." .. specName
-    for typeName, typeEntry in pairs(g_vehicleTypeManager.types) do
-        local byName = typeEntry ~= nil and typeEntry.specializationsByName or nil
-        if byName ~= nil and byName["motorized"] ~= nil then
-            -- finalizeTypes can run more than once (base + map); the spec is
-            -- stored under the mod-prefixed name (FS25_IronHorseRealism.<spec>),
-            -- so we must match plain OR prefixed to avoid "already exists".
-            local alreadyHas = false
-            for name in pairs(byName) do
-                if name == specName or name:sub(-#suffix) == suffix then
-                    alreadyHas = true
-                    break
-                end
-            end
-            if not alreadyHas then
-                g_vehicleTypeManager:addSpecialization(typeName, specName)
-            end
+    local specObject = g_specializationManager:getSpecializationObjectByName(specName)
+    if specObject == nil then
+        Logging.warning("[IronHorseRealism] specialization object '%s' not found - not applied.", specName)
+        return
+    end
+    for _, vehicleType in pairs(g_vehicleTypeManager.types) do
+        if vehicleType ~= nil and vehicleType.specializationsByName ~= nil
+            and vehicleType.specializationsByName["motorized"] ~= nil
+            and vehicleType.specializationsByName[specName] == nil then
+            -- Insert under the PLAIN spec name (like ADS) so the per-vehicle
+            -- table is self.spec_ironHorseRealism. Using
+            -- g_vehicleTypeManager:addSpecialization mod-prefixes the name,
+            -- which breaks that accessor (nil spec -> crash every tick + on join).
+            vehicleType.specializationsByName[specName] = specObject
+            table.insert(vehicleType.specializationNames, specName)
+            table.insert(vehicleType.specializations, specObject)
         end
     end
 end
