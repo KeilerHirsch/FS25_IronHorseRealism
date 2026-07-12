@@ -23,10 +23,11 @@ read_globals = {
     "g_currentModName", "Mission00", "Class", "InitEventClass",
     "Event", "EventIds", "streamWriteBool", "streamReadBool", "streamWriteString",
     "streamReadString", "streamWriteFloat32", "streamReadFloat32",
-    "streamWriteInt32", "streamReadInt32", "NetworkUtil", "g_server", "g_client",
+    "streamWriteInt32", "streamReadInt32", "streamWriteUIntN", "streamReadUIntN",
+    "NetworkUtil", "g_server", "g_client",
     "getName", "g_time", "g_i18n", "getUserProfileAppPath", "createXMLFile",
     "XMLFile", "InputAction", "source", "renderText", "setTextColor", "setTextBold",
-    "setTextAlignment", "RenderText",
+    "setTextAlignment", "RenderText", "drawFilledRect",
 }
 
 -- Tests load the mod with stubbed engine globals.

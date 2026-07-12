@@ -2,6 +2,60 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.3.0] - 2026-07-12 — HUD dashboard framework + multiplayer fix
+
+### Added
+- **Cockpit-style HUD dashboard framework.** The unified HUD is now a
+  severity-coloured indicator cluster (mirrors the clean ADS dashboard look, own
+  code): it anchors to the game's speed gauge when available, with a fixed
+  fallback. Each module now DECLARES its indicators via the new
+  `getHudIndicators` contract — the HUD owns all layout, colour
+  (INFO / WARNING / CRITICAL / COOL) and rendering. This is the shared surface
+  every future module (engineHealth, drivetrain, tires, electrical, ...) drops
+  its warning symbol into. Icons are placeholder chips for now; a hand-drawn
+  IronHorse icon atlas is a later art pass that swaps only the chip renderer.
+
+### Fixed
+- **Multiplayer: the "engine labors" cue never reached dedicated-server clients.**
+  The struggle phase is computed server-side only, but on a dedicated server no
+  player is the server, so the driving client never saw `PHASE_STRUGGLE` and the
+  "!! Motor quaelt sich" HUD warning never appeared — the core feature was broken
+  on its own target platform. The phase is now replicated to clients: initial
+  sync on join (`onWriteStream`/`onReadStream`) and a live sync on every phase
+  change (`IronHorseSyncEvent`, server → clients).
+
+### Security
+- **`IronHorseSyncEvent` no longer applies unauthenticated client writes.** The
+  server now rejects any client-originated sync unless its `(module, key)` is on
+  an explicit client-writable whitelist (empty today — all state is
+  server-authoritative). Closes a trust-boundary gap in the shared sync infra.
+
+### Changed
+- `engineStall` phase is now a compact numeric enum (was a string) so it
+  serialises directly over the network. No gameplay change.
+- Module HUD contract: `drawHud` (pushed raw text lines) → `getHudIndicators`
+  (declares structured indicators). engineStall now reports a MOTOR indicator
+  whose severity comes from a pure, unit-tested `indicatorSeverity`
+  (struggle → CRITICAL, heavy load → WARNING, else INFO) plus a live load-% readout.
+
+### Removed
+- Dead `IronHorseSpecialization.prerequisitesPresent` (never consulted — the spec
+  is injected after `validateTypes`; the real "must be motorized" gate is the
+  injection filter). Replaced with a comment at the seam.
+
+### Notes
+- `STALL_COOLDOWN_S` clarified: it is a post-stall re-stall debounce that, at the
+  current thresholds, never actually bites (acc-rebuild time already exceeds it).
+  A true no-restart lockout is a fine-tuning TODO for the power-drop pass.
+- **Early access.** Pure logic + syntax verified (12/12 via lupa) plus a full
+  ECC multi-agent review (0 CRITICAL/HIGH; all MEDIUM/LOW findings fixed). Still
+  to confirm live on a dedicated server: the phase MP-sync (struggle cue reaches
+  the client) and the HUD cluster (renders next to the speed gauge, MOTOR chip
+  colours by severity) — a hotfix follows if the playtest finds anything.
+  Fine-tuning is deliberately last: active power drop during struggle
+  (`setAccelerationLimit`), exhaust smoke, threshold calibration, and a
+  hand-drawn icon atlas to replace the placeholder chips.
+
 ## [0.1.2.0] - 2026-07-12
 
 ### Changed

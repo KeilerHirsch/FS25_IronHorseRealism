@@ -13,9 +13,11 @@ IronHorseSpecialization = {}
 
 local SPEC = "spec_ironHorseRealism"
 
-function IronHorseSpecialization.prerequisitesPresent(specializations)
-    return SpecializationUtil.hasSpecialization(Motorized, specializations)
-end
+-- No prerequisitesPresent: the spec is injected directly into motorized vehicle
+-- types in IronHorseRealism.registerSpecializationToVehicles (which runs in
+-- TypeManager.finalizeTypes, AFTER validateTypes), so the manager never consults
+-- a prerequisite callback here. The "must be motorized" gate is the injection
+-- filter (specializationsByName["motorized"] ~= nil) at the real call site.
 
 function IronHorseSpecialization.registerEventListeners(vehicleType)
     SpecializationUtil.registerEventListener(vehicleType, "onLoad", IronHorseSpecialization)
@@ -94,9 +96,16 @@ function IronHorseSpecialization:onDraw(_isActiveForInput, _isActiveForInputIgno
     if self.getIsEntered ~= nil and not self:getIsEntered() then
         return
     end
-    IronHorseHud.beginFrame()
+    -- Collect the indicators every module declares, then let the HUD render the
+    -- single cockpit cluster (one unified HUD; modules never render themselves).
+    local indicators = {}
     for _, m in ipairs(spec.modules) do
-        m:drawHud(self, spec.state[m.name], IronHorseHud)
+        local list = m:getHudIndicators(self, spec.state[m.name])
+        if list ~= nil then
+            for _, ind in ipairs(list) do
+                indicators[#indicators + 1] = ind
+            end
+        end
     end
-    IronHorseHud.endFrame()
+    IronHorseHud.renderCluster(self, indicators)
 end

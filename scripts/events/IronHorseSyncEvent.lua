@@ -13,6 +13,26 @@ local IronHorseSyncEvent_mt = Class(IronHorseSyncEvent, Event)
 
 InitEventClass(IronHorseSyncEvent, "IronHorseSyncEvent")
 
+-- (moduleName -> {key = validator}) that a CLIENT may push to the server.
+-- EMPTY today: all IronHorse state is server-authoritative (server -> clients
+-- only), so the server rejects every client-originated write.
+--
+-- A whitelist entry MUST be a validator FUNCTION (vehicle, connection, value) ->
+-- bool, never a bare `true`. The validator has to confirm the connection
+-- actually owns/controls that vehicle AND that the value is in range. Requiring
+-- a function makes it impossible to open a client-writable key without also
+-- supplying that ownership + range check — a non-function entry is denied.
+IronHorseSyncEvent.CLIENT_WRITABLE = {}
+
+local function clientWriteAllowed(moduleName, key, vehicle, connection, value)
+    local keys = IronHorseSyncEvent.CLIENT_WRITABLE[moduleName]
+    local validator = keys ~= nil and keys[key] or nil
+    if type(validator) ~= "function" then
+        return false   -- unknown key, or a non-function (e.g. bare true): deny
+    end
+    return validator(vehicle, connection, value) == true
+end
+
 function IronHorseSyncEvent.emptyNew()
     return Event.new(IronHorseSyncEvent_mt)
 end
@@ -42,6 +62,16 @@ function IronHorseSyncEvent:readStream(streamId, connection)
 end
 
 function IronHorseSyncEvent:run(connection)
+    local fromClient = not connection:getIsServer()
+    -- Server received this from a client: only apply fields that are explicitly
+    -- declared client-writable. Otherwise a client could inject arbitrary module
+    -- state on any vehicle. Nothing is client-writable today, so this drops all
+    -- client-originated writes. (Server -> client broadcasts have fromClient=false
+    -- and are trusted.)
+    if fromClient and not clientWriteAllowed(self.moduleName, self.key, self.vehicle, connection, self.value) then
+        return
+    end
+
     local vehicle = self.vehicle
     if vehicle ~= nil and vehicle.spec_ironHorseRealism ~= nil then
         local state = vehicle.spec_ironHorseRealism.state
@@ -49,8 +79,10 @@ function IronHorseSyncEvent:run(connection)
             state[self.moduleName][self.key] = self.value
         end
     end
-    -- If this came from a client, the server rebroadcasts to the other clients.
-    if not connection:getIsServer() then
+
+    -- If this came from a client (and passed the check above), the server
+    -- rebroadcasts to the other clients.
+    if fromClient then
         g_server:broadcastEvent(
             IronHorseSyncEvent.new(self.vehicle, self.moduleName, self.key, self.value),
             nil, connection, self.vehicle)

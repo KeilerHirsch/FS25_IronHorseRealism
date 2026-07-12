@@ -44,5 +44,8 @@ function IronHorseModule:onReadStream(_vehicle, _state, _streamId, _connection) 
 function IronHorseModule:saveToXML(_vehicle, _state, _xmlFile, _key) end
 function IronHorseModule:loadFromXML(_vehicle, _state, _xmlFile, _key) end
 
----Contribute lines/indicators to the unified HUD.
-function IronHorseModule:drawHud(_vehicle, _state, _hud) end
+---Declare this module's HUD indicators for the unified cockpit cluster.
+-- Return nil for "nothing to show", or a flat list of indicator tables:
+--   { id = "...", label = "MOTOR", value = "92%"?, status = "..."?, severity = IronHorseHud.SEV_* }
+-- The HUD owns all rendering, positioning and colour — modules only declare.
+function IronHorseModule:getHudIndicators(_vehicle, _state) return nil end

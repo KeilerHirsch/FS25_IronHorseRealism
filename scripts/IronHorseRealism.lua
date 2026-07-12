@@ -10,7 +10,7 @@
 --
 
 IronHorseRealism = {}
-IronHorseRealism.VERSION = "0.1.2.0"
+IronHorseRealism.VERSION = "0.1.3.0"
 IronHorseRealism.SPEC_NAME = "ironHorseRealism"
 
 local modDirectory = g_currentModDirectory

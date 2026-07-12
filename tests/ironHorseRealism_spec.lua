@@ -12,44 +12,59 @@ local function loadCore()
     _G.IronHorseModuleRegistry = nil
     _G.EngineStallModule = nil
     _G.IronHorseRealData = nil
+    _G.IronHorseHud = nil
     dofile("scripts/core/IronHorseModule.lua")
     dofile("scripts/core/IronHorseModuleRegistry.lua")
     dofile("scripts/core/IronHorseRealData.lua")
+    dofile("scripts/hud/IronHorseHud.lua")            -- severity constants used below
     dofile("scripts/modules/EngineStallModule.lua")
 end
 
 describe("EngineStallModule.updateOverload (two-phase integrator)", function()
     loadCore()
-    local CFG = _G.EngineStallModule.CFG
+    local ESM = _G.EngineStallModule
+    local CFG = ESM.CFG
+
+    it("exposes phase as a compact numeric enum (network-serialisable, 2-bit)", function()
+        -- The MP sync (initial onWriteStream + live event) writes phase as a
+        -- 2-bit uint, so the constants MUST be distinct numbers in 0..3.
+        assert.are.equal("number", type(ESM.PHASE_NONE))
+        assert.are.equal("number", type(ESM.PHASE_STRUGGLE))
+        assert.are.equal("number", type(ESM.PHASE_STALL))
+        assert.is_true(ESM.PHASE_NONE ~= ESM.PHASE_STRUGGLE)
+        assert.is_true(ESM.PHASE_STRUGGLE ~= ESM.PHASE_STALL)
+        assert.is_true(ESM.PHASE_NONE ~= ESM.PHASE_STALL)
+        assert.is_true(ESM.PHASE_STALL >= 0 and ESM.PHASE_STALL <= 3)
+    end)
 
     it("stalls only after the full stall window of sustained overload", function()
-        local acc, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 4.0, CFG)
+        local acc, phase = ESM.updateOverload(0, 1.0, 0.8, 4.0, CFG)
         assert.is_true(acc >= CFG.STALL_SECONDS)
-        assert.are.equal("stall", phase)
+        assert.are.equal(ESM.PHASE_STALL, phase)
     end)
 
     it("struggles (audible labor) before it stalls", function()
-        local _, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 2.0, CFG)
-        assert.are.equal("struggle", phase) -- past STRUGGLE_SECONDS, before STALL_SECONDS
+        local _, phase = ESM.updateOverload(0, 1.0, 0.8, 2.0, CFG)
+        assert.are.equal(ESM.PHASE_STRUGGLE, phase) -- past STRUGGLE_SECONDS, before STALL_SECONDS
     end)
 
     it("no phase yet on a short overload burst", function()
-        local _, phase = _G.EngineStallModule.updateOverload(0, 1.0, 0.8, 1.0, CFG)
-        assert.are.equal("none", phase)
+        local _, phase = ESM.updateOverload(0, 1.0, 0.8, 1.0, CFG)
+        assert.are.equal(ESM.PHASE_NONE, phase)
     end)
 
     it("lugging (low rpm + high load) fills faster than plain sub-overload", function()
         -- load 0.88 < OVERLOAD_LOAD (0.90): only the lugging case accumulates
-        local accLug = _G.EngineStallModule.updateOverload(0, 0.88, 0.2, 1.5, CFG)
-        local accOvl = _G.EngineStallModule.updateOverload(0, 0.88, 0.8, 1.5, CFG)
+        local accLug = ESM.updateOverload(0, 0.88, 0.2, 1.5, CFG)
+        local accOvl = ESM.updateOverload(0, 0.88, 0.8, 1.5, CFG)
         assert.is_true(accLug > accOvl)
         assert.are.equal(0, accOvl)
     end)
 
     it("bleeds off and clamps at zero when load drops", function()
-        local acc, phase = _G.EngineStallModule.updateOverload(2.0, 0.5, 0.8, 5.0, CFG)
+        local acc, phase = ESM.updateOverload(2.0, 0.5, 0.8, 5.0, CFG)
         assert.are.equal(0, acc)
-        assert.are.equal("none", phase)
+        assert.are.equal(ESM.PHASE_NONE, phase)
     end)
 end)
 
@@ -92,5 +107,28 @@ describe("IronHorseRealData.lerp", function()
         assert.are.equal(1.2, _G.IronHorseRealData.lerp(0.8, 1.6, 0.5))
         assert.are.equal(0.8, _G.IronHorseRealData.lerp(0.8, 1.6, -5)) -- clamp low
         assert.are.equal(1.6, _G.IronHorseRealData.lerp(0.8, 1.6, 5))  -- clamp high
+    end)
+end)
+
+describe("EngineStallModule.indicatorSeverity (pure HUD severity mapping)", function()
+    loadCore()
+    local ESM = _G.EngineStallModule
+    local HUD = _G.IronHorseHud
+    local CFG = ESM.CFG
+
+    it("struggle phase maps to CRITICAL (engine dying)", function()
+        assert.are.equal(HUD.SEV_CRITICAL, ESM.indicatorSeverity(ESM.PHASE_STRUGGLE, 0.5, CFG))
+    end)
+
+    it("stall phase maps to CRITICAL even at low load", function()
+        assert.are.equal(HUD.SEV_CRITICAL, ESM.indicatorSeverity(ESM.PHASE_STALL, 0.1, CFG))
+    end)
+
+    it("heavy load without struggle maps to WARNING", function()
+        assert.are.equal(HUD.SEV_WARNING, ESM.indicatorSeverity(ESM.PHASE_NONE, CFG.HUD_WARN_LOAD, CFG))
+    end)
+
+    it("normal load maps to INFO", function()
+        assert.are.equal(HUD.SEV_INFO, ESM.indicatorSeverity(ESM.PHASE_NONE, 0.2, CFG))
     end)
 end)
