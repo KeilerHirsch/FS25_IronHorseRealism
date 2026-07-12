@@ -34,11 +34,22 @@ IronHorseRealData.engine = {
 }
 
 -- Radial ag-tire pressure envelope (bar). Real field vs road pressures.
+-- Traction/contact-patch multipliers are RELATIVE to a 1.0 baseline and grounded
+-- in ag-tire tractive-efficiency behaviour (Michelin/Trelleborg field-vs-road
+-- charts): dropping pressure enlarges the footprint and raises tractive
+-- efficiency on soft soil (~+15-20 %), at the cost of road rolling efficiency;
+-- raising pressure does the reverse. Endpoints are tied to min/max pressure so a
+-- module interpolates between them.
 IronHorseRealData.tire = {
     fieldPressureBar = 0.8,       -- low pressure, large contact patch (traction)
     roadPressureBar = 1.6,        -- higher pressure, road efficiency
     minPressureBar = 0.6,
     maxPressureBar = 2.4,
+
+    tractionAtMinPressure = 1.20, -- 0.6 bar: max footprint -> best off-road grip
+    tractionAtMaxPressure = 0.92, -- 2.4 bar: min footprint -> road, less soil grip
+    patchAtMinPressure    = 1.30, -- relative contact-patch area at min pressure
+    patchAtMaxPressure    = 0.85, -- ... and at max pressure
 }
 
 ---Helper: linear interpolation, clamped to [a, b].

@@ -10,7 +10,7 @@
 --
 
 IronHorseRealism = {}
-IronHorseRealism.VERSION = "0.1.3.0"
+IronHorseRealism.VERSION = "0.2.0.0"
 IronHorseRealism.SPEC_NAME = "ironHorseRealism"
 
 local modDirectory = g_currentModDirectory
@@ -24,13 +24,23 @@ source(modDirectory .. "scripts/events/IronHorseSyncEvent.lua")
 source(modDirectory .. "scripts/hud/IronHorseHud.lua")
 source(modDirectory .. "scripts/modules/EngineStallModule.lua")
 source(modDirectory .. "scripts/modules/EngineHealthModule.lua")
+source(modDirectory .. "scripts/modules/DrivetrainModule.lua")
+source(modDirectory .. "scripts/modules/TireModule.lua")
 source(modDirectory .. "scripts/modules/ElectricalModule.lua")
+source(modDirectory .. "scripts/modules/VisualDirtModule.lua")
+source(modDirectory .. "scripts/modules/ToolboxModule.lua")
 
 ---Register all feature modules with the registry. Add new modules here.
+-- Order follows the driveline chain: engine → drivetrain → tyres → electrical,
+-- then the cosmetic/maintenance layer (visualDirt → toolbox).
 function IronHorseRealism.registerModules()
     IronHorseModuleRegistry.register(EngineStallModule)
     IronHorseModuleRegistry.register(EngineHealthModule)
+    IronHorseModuleRegistry.register(DrivetrainModule)
+    IronHorseModuleRegistry.register(TireModule)
     IronHorseModuleRegistry.register(ElectricalModule)
+    IronHorseModuleRegistry.register(VisualDirtModule)
+    IronHorseModuleRegistry.register(ToolboxModule)
 end
 
 ---Register the specialization class with the game (mirrors ADS).

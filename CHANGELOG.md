@@ -4,7 +4,53 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0.0] - 2026-07-12 — the seven-module chain (early access)
+
+Early access. Every module is built on the backbone with its cockpit readout in
+the one shared HUD, server-authoritative multiplayer sync and savegame
+persistence. The physics/consequence layer (diff & tyre forces, dirt & repair
+effects) is deliberately deferred and calibrated in-game — see
+`docs/INGAME_PHYSICS_PLAN.md`. License unchanged (GPL-3.0).
+
 ### Added
+- **drivetrain module — differential locks & power split (physics layer).** Front
+  / rear diff locks and a 2WD / 4WD / FWD drive mode, plus the front/rear power
+  split. Pure diff resolution (locked binds an axle, open runs free) and the
+  drive-mode/split maths are grounded in the GIANTS `updateDifferential` contract
+  (mechanic re-built clean-room from the engine API + real driveline behaviour;
+  EnhancedVehicle referenced for the HOW only, never copied — it is GPL-3.0).
+  Three cockpit indicators (DIFF V / DIFF H / ANTRIEB), server-authoritative with
+  MP sync, state persists across saves. Locks are stored numerically (0/1) so the
+  float-only sync channel can't misfire the Lua "0 is truthy" trap. The physics
+  apply (`applyDifferentials`) + input toggles are the deferred in-game hook —
+  see `docs/INGAME_PHYSICS_PLAN.md`.
+- **tire module — tyre pressure & traction (physics layer).** Per-axle radial
+  ag-tyre pressure (bar) and the traction/contact-patch it buys: low pressure =
+  bigger footprint = field grip, high pressure = road efficiency. The pure
+  pressure→traction curve interpolates real ag-tyre tractive-efficiency endpoints
+  (Michelin/Trelleborg field-vs-road, in `IronHorseRealData.tire`) — a permissive-
+  code search found nothing that fits this axis, so the curve is hand-rolled on
+  real data. Two cockpit indicators (REIFEN V / REIFEN H bar + grip%),
+  server-authoritative with throttled MP sync, pressures persist across saves. The
+  `WheelPhysics.updateTireFriction` override + inflate/deflate input are the
+  deferred in-game hook — see `docs/INGAME_PHYSICS_PLAN.md`.
+- **visualDirt module — dirt & dust readout + realism rate.** Rather than
+  re-model dirt, it REUSES the engine's own Washable dirt system (getDirtAmount,
+  already replicated + saved by the engine) as the source of truth, adds a cockpit
+  indicator (SCHMUTZ %) that warns only when the machine is filthy, and supplies
+  the realism layer vanilla lacks: a pure, tested condition-based accumulation
+  rate (mud cakes on fast in the wet field, dust when dry and moving). A pure
+  reader with no state/sync/save of its own. Applying that rate to the engine dirt
+  and coupling heavy dirt into cooling → engineHealth are the deferred consequence.
+- **toolbox module — field repair.** A makeshift in-field repair that keeps the
+  machine going between workshop visits: cheaper and quicker than the workshop but
+  only partial (a full repair still needs the workshop). Reuses the engine's own
+  Wearable damage (getDamageAmount, replicated + saved by the engine) for the
+  cockpit indicator (SCHADEN % + a "Feldrep." cue when worth it) and supplies the
+  pure, tested field-repair maths — how much a makeshift fix restores (capped at a
+  floor), whether it's worth doing, and what it costs. A pure reader with no
+  state/sync/save of its own. The repair ACTION (input) and the cost calibration
+  against real workshop prices are the deferred consequence/tuning.
 - **engineHealth module — engine wear & temperature.** Second feature on the
   backbone and the first with persistent, synced state. A diesel thermal model
   (temperature integrates toward a load-based target — idles warm, climbs into the

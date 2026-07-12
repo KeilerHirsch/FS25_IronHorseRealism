@@ -14,7 +14,11 @@ globals = {
     "IronHorseHud",
     "EngineStallModule",
     "EngineHealthModule",
+    "DrivetrainModule",
+    "TireModule",
     "ElectricalModule",
+    "VisualDirtModule",
+    "ToolboxModule",
 }
 
 -- Engine-provided globals the mod reads (never assigns).
@@ -30,6 +34,7 @@ read_globals = {
     "getName", "g_time", "g_i18n", "getUserProfileAppPath", "createXMLFile",
     "XMLFile", "InputAction", "source", "renderText", "setTextColor", "setTextBold",
     "setTextAlignment", "RenderText", "drawFilledRect",
+    "updateDifferential",
 }
 
 -- Tests load the mod with stubbed engine globals.
