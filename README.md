@@ -8,6 +8,10 @@ It unifies what today needs several separate mods — engine health, drivetrain,
 tire pressure, electrical, dirt/visuals and a field-repair toolbox — into **one
 coherent drivetrain chain** with **one HUD**.
 
+<p align="center">
+  <img src="assets/showcase.svg" width="900" alt="Iron Horse Realism — a modular vehicle-realism framework for FS25. engineStall and engineHealth are live; drivetrain, tyres, electrical, visualDirt and toolbox are planned. One cockpit HUD colours each system by severity (cold / normal / warning / critical)."/>
+</p>
+
 > **Foundation release (0.1.x):** the modular core only. Every feature is a
 > self-contained module plugged into the core. This is the extensible base the
 > rest of the mod grows on.
