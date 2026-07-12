@@ -2,6 +2,20 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- **engineHealth module — engine wear & temperature.** Second feature on the
+  backbone and the first with persistent, synced state. A diesel thermal model
+  (temperature integrates toward a load-based target — idles warm, climbs into the
+  overheat band under sustained heavy load, cools to ambient; ambient taken from
+  the in-game weather) plus an engine condition (0..1) that degrades from
+  overheating, cold-shock (load on a cold engine), and sustained overload. Two
+  cockpit indicators (TEMP + ZUSTAND), server-authoritative with throttled MP
+  sync, and condition PERSISTS across saves (first use of the backbone's savegame
+  hooks). Numbers grounded in `IronHorseRealData.engine`. Consequences (power
+  derate / stall-risk coupling, cold-start limit) are deferred to the tuning pass.
+
 ## [0.1.3.0] - 2026-07-12 — HUD dashboard framework + multiplayer fix
 
 ### Added
