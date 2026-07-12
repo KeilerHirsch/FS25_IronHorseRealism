@@ -2,7 +2,7 @@
 
 The toolbox module's repair costs follow the mod's core principle: **real numbers,
 not invented ones.** This is the research that grounds them, so the constants are
-auditable and Michael can feel-tune from a real baseline in-game.
+auditable and the maintainer can feel-tune from a real baseline in-game.
 
 ## Real-world anchors (2025)
 
@@ -64,6 +64,6 @@ grounded in FS25's own curve. What remains is feel: the key choice, the cost
 against FS25's economy in practice, and the gameplay settings — how much one field
 repair removes (`FIELD_REPAIR_AMOUNT` 0.35) and the floor it can't beat
 (`FIELD_REPAIR_FLOOR` 0.15 = 85 % condition). MP correctness (client press → server
-applies → every client sees the lower damage + the charge) is Michael's
+applies → every client sees the lower damage + the charge) is the maintainer's
 dedicated-server test. The money-path security rules are enforced in code and
 noted in `docs/INGAME_PHYSICS_PLAN.md`.

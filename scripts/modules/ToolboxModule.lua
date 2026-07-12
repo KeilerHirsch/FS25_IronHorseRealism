@@ -22,7 +22,7 @@
 -- field-repair floor. Server-authoritative; setDamageAmount + addMoney are engine-
 -- replicated, so all clients see the result.
 --
--- IN-GAME TODO (needs Michael's dedicated-server test, not headless-verifiable):
+-- IN-GAME TODO (needs the maintainer's dedicated-server test, not headless-verifiable):
 -- key feel, cost feel vs FS25's economy, and MP correctness (client press -> server
 -- applies -> every client sees the lower damage + the charge on the owner farm).
 --

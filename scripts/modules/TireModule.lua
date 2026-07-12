@@ -21,7 +21,7 @@
 -- axis (the Pacejka libraries model lateral slip, a different thing), so the pure
 -- curve is hand-rolled on real data — see reuse-first-permissive skill.
 --
--- IN-GAME / FINE-TUNING TODO (deferred — the physics-hook part, needs Michael's
+-- IN-GAME / FINE-TUNING TODO (deferred — the physics-hook part, needs the maintainer's
 -- dedicated-server test, NOT wired yet):
 --   1. INPUT — inflate / deflate actions (optionally consuming an AIR reserve like
 --      the vanilla air fillUnit). Until then pressure holds its default, so the

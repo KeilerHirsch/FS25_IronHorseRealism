@@ -27,7 +27,7 @@
 -- GPL-3.0 → referenced for the HOW only, never copied.
 --
 -- IN-GAME / FINE-TUNING TODO (deferred — this is the physics-hook part that needs
--- Michael's dedicated-server test, NOT wired into the hot path yet):
+-- the maintainer's dedicated-server test, NOT wired into the hot path yet):
 --   1. INPUT — bind toggle actions (front lock / rear lock / cycle drive mode).
 --      Needs modDesc <actions>+<inputBinding> + l10n + an onRegisterActionEvents
 --      dispatch on the backbone. Until then diffs stay at their default (open,
