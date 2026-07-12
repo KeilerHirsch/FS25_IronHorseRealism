@@ -20,6 +20,8 @@ IronHorseRealData.battery = {
     terminalMinV = 8.5,
     terminalMaxV = 14.8,
     loadedMinV = 12.2,            -- healthy loaded resting voltage
+    restingFullV = 12.7,          -- open-circuit voltage at 100% state of charge
+    restingEmptyV = 11.8,         -- open-circuit voltage at ~0% state of charge
     chargeAcceptTempMinC = -15,
     chargeAcceptTempMaxC = 25,
 }

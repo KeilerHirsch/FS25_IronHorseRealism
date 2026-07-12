@@ -12,6 +12,7 @@ IronHorseConfig.enabled = true
 IronHorseConfig.moduleEnabled = {
     engineStall = true,
     engineHealth = true,
+    electrical = true,
 }
 
 ---@return boolean whether the mod is active at all

@@ -14,6 +14,7 @@ globals = {
     "IronHorseHud",
     "EngineStallModule",
     "EngineHealthModule",
+    "ElectricalModule",
 }
 
 -- Engine-provided globals the mod reads (never assigns).

@@ -14,12 +14,14 @@ local function loadCore()
     _G.IronHorseRealData = nil
     _G.IronHorseHud = nil
     _G.EngineHealthModule = nil
+    _G.ElectricalModule = nil
     dofile("scripts/core/IronHorseModule.lua")
     dofile("scripts/core/IronHorseModuleRegistry.lua")
     dofile("scripts/core/IronHorseRealData.lua")
     dofile("scripts/hud/IronHorseHud.lua")            -- severity constants used below
     dofile("scripts/modules/EngineStallModule.lua")
     dofile("scripts/modules/EngineHealthModule.lua")
+    dofile("scripts/modules/ElectricalModule.lua")
 end
 
 describe("EngineStallModule.updateOverload (two-phase integrator)", function()
@@ -174,5 +176,32 @@ describe("EngineHealthModule (pure thermal + wear)", function()
         assert.are.equal(HUD.SEV_CRITICAL, EHM.conditionSeverity(0.1, CFG))
         assert.are.equal(HUD.SEV_WARNING, EHM.conditionSeverity(0.4, CFG))
         assert.are.equal(HUD.SEV_INFO, EHM.conditionSeverity(0.9, CFG))
+    end)
+end)
+
+describe("ElectricalModule (pure battery model)", function()
+    loadCore()
+    local ELM = _G.ElectricalModule
+    local HUD = _G.IronHorseHud
+    local CFG = ELM.CFG
+
+    it("charges while running, drains while off, clamps 0..1", function()
+        assert.is_true(ELM.updateSOC(0.5, true, 3600, CFG) > 0.5)
+        assert.is_true(ELM.updateSOC(0.5, false, 3600, CFG) < 0.5)
+        assert.are.equal(1, ELM.updateSOC(1.0, true, 3600 * 100, CFG))
+        assert.are.equal(0, ELM.updateSOC(0.0, false, 3600 * 100, CFG))
+    end)
+
+    it("voltage: regulated while running, tracks SOC at rest", function()
+        assert.are.equal(CFG.CHARGE_TARGET_V, ELM.terminalVoltage(0.5, true, CFG))
+        assert.are.equal(CFG.RESTING_EMPTY_V, ELM.terminalVoltage(0.0, false, CFG))
+        assert.is_true(math.abs(ELM.terminalVoltage(1.0, false, CFG) - CFG.RESTING_FULL_V) < 1e-6)
+        assert.is_true(ELM.terminalVoltage(1.0, false, CFG) > ELM.terminalVoltage(0.3, false, CFG))
+    end)
+
+    it("SOC severity bands", function()
+        assert.are.equal(HUD.SEV_CRITICAL, ELM.socSeverity(0.1, CFG))
+        assert.are.equal(HUD.SEV_WARNING, ELM.socSeverity(0.35, CFG))
+        assert.are.equal(HUD.SEV_INFO, ELM.socSeverity(0.9, CFG))
     end)
 end)

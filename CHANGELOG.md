@@ -15,6 +15,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
   sync, and condition PERSISTS across saves (first use of the backbone's savegame
   hooks). Numbers grounded in `IronHorseRealData.engine`. Consequences (power
   derate / stall-risk coupling, cold-start limit) are deferred to the tuning pass.
+- **electrical module — battery & alternator.** A 12 V lead-acid starter battery
+  (150 Ah): parasitic drain when off, alternator recharge (~14.4 V) while running,
+  terminal voltage that tracks state of charge at rest. Two cockpit indicators
+  (BATT voltage + LADUNG %), server-authoritative with throttled MP sync, SOC
+  persists across saves. Grounded in `IronHorseRealData.battery`. The no-crank
+  consequence (flat battery won't start the engine) is deferred to the tuning pass.
 
 ## [0.1.3.0] - 2026-07-12 — HUD dashboard framework + multiplayer fix
 

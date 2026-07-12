@@ -24,11 +24,13 @@ source(modDirectory .. "scripts/events/IronHorseSyncEvent.lua")
 source(modDirectory .. "scripts/hud/IronHorseHud.lua")
 source(modDirectory .. "scripts/modules/EngineStallModule.lua")
 source(modDirectory .. "scripts/modules/EngineHealthModule.lua")
+source(modDirectory .. "scripts/modules/ElectricalModule.lua")
 
 ---Register all feature modules with the registry. Add new modules here.
 function IronHorseRealism.registerModules()
     IronHorseModuleRegistry.register(EngineStallModule)
     IronHorseModuleRegistry.register(EngineHealthModule)
+    IronHorseModuleRegistry.register(ElectricalModule)
 end
 
 ---Register the specialization class with the game (mirrors ADS).
