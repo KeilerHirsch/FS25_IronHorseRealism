@@ -325,6 +325,12 @@ describe("ToolboxModule (pure field-repair maths)", function()
         assert.are.equal(0, TBM.fieldRepairCost(0.05, 100000, CFG))
     end)
 
+    it("a full workshop repair costs more than a partial field repair", function()
+        assert.is_true(math.abs(TBM.workshopRepairCost(0.5, 100000, CFG) - 0.5 * 100000 * CFG.WORKSHOP_REPAIR_FRACTION) < 1e-6)
+        assert.is_true(TBM.workshopRepairCost(0.9, 100000, CFG) > TBM.fieldRepairCost(0.9, 100000, CFG))
+        assert.is_true(CFG.FIELD_COST_FACTOR < CFG.WORKSHOP_REPAIR_FRACTION)
+    end)
+
     it("damage severity bands", function()
         assert.are.equal(HUD.SEV_CRITICAL, TBM.repairSeverity(0.8, CFG))
         assert.are.equal(HUD.SEV_WARNING, TBM.repairSeverity(0.6, CFG))

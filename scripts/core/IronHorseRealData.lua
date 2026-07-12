@@ -52,6 +52,20 @@ IronHorseRealData.tire = {
     patchAtMaxPressure    = 0.85, -- ... and at max pressure
 }
 
+-- Vehicle repair economics (grounded in real workshop data, 2025). Sources:
+-- German ag-machinery workshop rates €70-130/h (Deutz ~75, BayWa ~110, John Deere
+-- >130 -> midpoint ~100; Verrechnungssaetze often >100 €/h); lifetime accumulated
+-- repair cost ~= 25% of the machine's list price; annual maintenance/repair 5-10%
+-- of value. A makeshift FIELD repair is cheaper than the workshop (own labour,
+-- basic parts, no dealer margin) but only partial — the workshop does the full job.
+IronHorseRealData.repair = {
+    workshopLaborEURperH   = 100,   -- German ag-workshop midpoint (range 70-130)
+    workshopRepairFraction = 0.06,  -- a full 0->1 workshop repair ~= 6% of price
+                                     -- (lifetime ~25% ~= four such heavy repairs)
+    fieldRepairCostRatio   = 0.45,  -- a field repair costs ~45% of the workshop
+                                     -- price for the same damage delta
+}
+
 ---Helper: linear interpolation, clamped to [a, b].
 -- @return number
 function IronHorseRealData.lerp(a, b, t)

@@ -20,13 +20,15 @@
 --   1. ACTION (input): a "field repair" bind that, on the SERVER, applies
 --      fieldRepairResult via setDamageAmount and charges fieldRepairCost via
 --      g_currentMission:addMoney (a workshop visit still does the full repair).
---   2. PRICES: FIELD_COST_FACTOR is a PLACEHOLDER. Calibrate the field-repair
---      cost + the workshop repair economics against REAL vehicle repair /
---      workshop prices (the dedicated repair-price research pass). Real data →
---      IronHorseRealData, like every other number in this mod.
+--   2. PRICES: the field + workshop cost factors are now grounded in real
+--      workshop data (IronHorseRealData.repair — German ag-workshop €/h, the
+--      lifetime-repair ~25%-of-price rule, field ~45% of the workshop cost). The
+--      remaining work is feel-tuning them against FS25's own economy in-game.
 --
 
 ToolboxModule = IronHorseModule.new("toolbox")
+
+local REPAIR = IronHorseRealData.repair
 
 ToolboxModule.CFG = {
     FIELD_REPAIR_FLOOR   = 0.15,   -- a makeshift fix can't get damage below this
@@ -34,8 +36,11 @@ ToolboxModule.CFG = {
     FIELD_REPAIR_AMOUNT  = 0.35,   -- damage removed by one field repair
     MIN_DAMAGE_TO_REPAIR = 0.10,   -- below this it isn't worth a field repair
 
-    -- PLACEHOLDER economics — calibrate against real workshop prices (see TODO).
-    FIELD_COST_FACTOR    = 0.008,  -- € = repairedDamageFraction * vehiclePrice * this
+    -- Economics grounded in real workshop data (IronHorseRealData.repair): a full
+    -- 0->1 workshop repair costs WORKSHOP_REPAIR_FRACTION of the machine price; a
+    -- field repair costs fieldRepairCostRatio of that for the same damage delta.
+    WORKSHOP_REPAIR_FRACTION = REPAIR.workshopRepairFraction,                    -- 0.06
+    FIELD_COST_FACTOR        = REPAIR.workshopRepairFraction * REPAIR.fieldRepairCostRatio, -- 0.027
 
     DAMAGE_WARN = 0.50,            -- HUD warning band
     DAMAGE_CRIT = 0.75,            -- HUD critical band (needs attention)
@@ -70,6 +75,13 @@ function ToolboxModule.fieldRepairCost(damage, vehiclePrice, cfg)
         repaired = 0
     end
     return repaired * (vehiclePrice or 0) * cfg.FIELD_COST_FACTOR
+end
+
+---Pure: cost of a FULL workshop repair (damage -> 0) — the pricier, complete
+-- alternative to a partial field repair. Grounded in the workshop-repair fraction
+-- of the machine price. @return number cost
+function ToolboxModule.workshopRepairCost(damage, vehiclePrice, cfg)
+    return (damage or 0) * (vehiclePrice or 0) * cfg.WORKSHOP_REPAIR_FRACTION
 end
 
 ---Pure: damage (0..1) → HUD severity. @return number
