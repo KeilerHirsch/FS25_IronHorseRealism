@@ -2,6 +2,7 @@
 -- IronHorseRealism — mod loader
 --
 -- The Man, The Mythos, The Legend : KeilerHirsch
+-- Copyright (c) 2026 KeilerHirsch. Licensed under the GNU GPL v3 or later.
 --
 -- Sources the core + modules, registers the single specialization, injects it
 -- into every motorized vehicle type, and runs the coexistence detector that
@@ -9,7 +10,7 @@
 --
 
 IronHorseRealism = {}
-IronHorseRealism.VERSION = "0.1.1.0"
+IronHorseRealism.VERSION = "0.1.2.0"
 IronHorseRealism.SPEC_NAME = "ironHorseRealism"
 
 local modDirectory = g_currentModDirectory

@@ -56,6 +56,4 @@ Produces a zip with `modDesc.xml` at the root (FS25 requirement).
 
 ## License
 
-**Proprietary, source-available** — see [LICENSE](LICENSE). You may read the
-source and use the released mod unmodified; you may not copy, modify, or
-redistribute it. Only ModHub and this repository are valid sources.
+**GPLv3** — free software. Forks and PRs are welcome; you **must keep the author attribution (KeilerHirsch)** and the same license. IronHorse is the open masterpiece of the collection. See [LICENSE](LICENSE).

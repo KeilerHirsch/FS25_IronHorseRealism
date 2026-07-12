@@ -2,6 +2,13 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.2.0] - 2026-07-12
+
+### Changed
+- Relicensed to **GPLv3** (was proprietary source-available). IronHorse is now the
+  open masterpiece — forks and PRs welcome, keep the attribution and the same license.
+  The KeilerHirsch default is GPLv3; the prior v0.1.1.0 release stays under its old license.
+
 ## [0.1.1.0] - 2026-07-12 — engineStall: struggle-then-stall
 
 ### Changed
