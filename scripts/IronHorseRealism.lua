@@ -10,7 +10,7 @@
 --
 
 IronHorseRealism = {}
-IronHorseRealism.VERSION = "0.2.0.0"
+IronHorseRealism.VERSION = "0.2.1.0"
 IronHorseRealism.SPEC_NAME = "ironHorseRealism"
 
 local modDirectory = g_currentModDirectory
@@ -21,6 +21,7 @@ source(modDirectory .. "scripts/core/IronHorseModuleRegistry.lua")
 source(modDirectory .. "scripts/core/IronHorseConfig.lua")
 source(modDirectory .. "scripts/core/IronHorseRealData.lua")
 source(modDirectory .. "scripts/events/IronHorseSyncEvent.lua")
+source(modDirectory .. "scripts/events/ToolboxRepairEvent.lua")
 source(modDirectory .. "scripts/hud/IronHorseHud.lua")
 source(modDirectory .. "scripts/modules/EngineStallModule.lua")
 source(modDirectory .. "scripts/modules/EngineHealthModule.lua")

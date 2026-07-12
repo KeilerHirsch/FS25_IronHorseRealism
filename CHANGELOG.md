@@ -4,6 +4,25 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.1.0] - 2026-07-12 — field-repair action (early access)
+
+### Added
+- **toolbox field-repair action (the first working input).** A "field repair"
+  key (Shift+R by default) lets you patch a damaged machine in the field. It is
+  server-authoritative: the client press sends a `ToolboxRepairEvent`, and the
+  server reads the damage + price from the vehicle itself (never a client value),
+  charges the owner farm FS25-style (`MoneyType.VEHICLE_REPAIR`), and lowers the
+  damage to the field-repair floor — a partial, cheaper alternative to the
+  workshop. Adds the first input layer to the backbone (`onRegisterActionEvents`
+  dispatch + a per-module hook).
+
+### Changed
+- **Repair costs now reuse FS25's own repair curve** (`price × damage^1.5 × 0.09`,
+  from `Wearable.calculateRepairPrice`) so they feel native to the economy; a
+  field repair is a 45 % discount on the workshop's marginal cost for the damage
+  chunk it fixes. That 9 % also matches real German ag-workshop data (€70–130/h,
+  lifetime repair ~25 % of price). See `docs/REPAIR_ECONOMICS.md`.
+
 ## [0.2.0.0] - 2026-07-12 — the seven-module chain (early access)
 
 Early access. Every module is built on the backbone with its cockpit readout in

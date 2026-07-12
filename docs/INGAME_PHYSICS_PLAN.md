@@ -18,7 +18,10 @@ change — nothing here can brick the other modules' in-game test.
 ## 1. Shared prerequisite — input plumbing (both modules need it)
 
 Neither module can be *felt* in-game until the player can change its state. The
-backbone has no input layer yet; add one once, both modules use it:
+backbone now HAS an input layer (added for the toolbox field-repair action: an
+`onRegisterActionEvents` dispatch + a per-module `onRegisterActionEvents` hook + a
+server-authoritative `ToolboxRepairEvent` command — use that as the worked
+example). The remaining diff/tyre actions plug into it the same way:
 
 1. `modDesc.xml` → `<actions>` + `<inputBindingContexts>` entries:
    `IH_DIFF_FRONT`, `IH_DIFF_REAR`, `IH_DRIVE_MODE`, `IH_TIRE_INFLATE`, `IH_TIRE_DEFLATE`.

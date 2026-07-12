@@ -52,18 +52,20 @@ IronHorseRealData.tire = {
     patchAtMaxPressure    = 0.85, -- ... and at max pressure
 }
 
--- Vehicle repair economics (grounded in real workshop data, 2025). Sources:
--- German ag-machinery workshop rates €70-130/h (Deutz ~75, BayWa ~110, John Deere
--- >130 -> midpoint ~100; Verrechnungssaetze often >100 €/h); lifetime accumulated
--- repair cost ~= 25% of the machine's list price; annual maintenance/repair 5-10%
--- of value. A makeshift FIELD repair is cheaper than the workshop (own labour,
--- basic parts, no dealer margin) but only partial — the workshop does the full job.
+-- Vehicle repair economics. The ACTIVE cost formula reuses FS25's OWN repair
+-- economy (Wearable.calculateRepairPrice = price * damage^1.5 * 0.09 -> up to 9%
+-- of price at full damage, the exponent rewarding frequent low-damage repairs) so
+-- IronHorse costs feel native to the game. That 9% sits inside the real-world band
+-- (DE ag-machinery workshop rates €70-130/h ~= 100 mid; lifetime repair ~25% of
+-- list price; annual 5-10% of value), so the game's number is also the realistic
+-- one. A makeshift FIELD repair is a discount on that (own labour, basic parts, no
+-- dealer margin) and only partial — the workshop does the full job.
 IronHorseRealData.repair = {
-    workshopLaborEURperH   = 100,   -- German ag-workshop midpoint (range 70-130)
-    workshopRepairFraction = 0.06,  -- a full 0->1 workshop repair ~= 6% of price
-                                     -- (lifetime ~25% ~= four such heavy repairs)
-    fieldRepairCostRatio   = 0.45,  -- a field repair costs ~45% of the workshop
-                                     -- price for the same damage delta
+    workshopLaborEURperH   = 100,   -- real DE ag-workshop midpoint (context/sanity)
+    lifetimeRepairFraction = 0.25,  -- real: lifetime repair ~= 25% of list price
+    fullRepairFraction     = 0.09,  -- FS25 economy: up to 9% of price at full damage
+    repairExponent         = 1.5,   -- FS25 economy: rewards frequent low-damage repairs
+    fieldRepairCostRatio   = 0.45,  -- field repair ~= 45% of the workshop marginal cost
 }
 
 ---Helper: linear interpolation, clamped to [a, b].

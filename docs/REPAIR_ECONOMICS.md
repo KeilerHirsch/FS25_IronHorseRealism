@@ -27,31 +27,43 @@ tractor machinery-cost estimates.
 
 ## Derivation of the mod constants
 
+The active cost formula **reuses FS25's own repair curve** so costs feel native to
+the game economy — and the game's 9 % coincidentally sits inside the real-world
+band, so the native number is also the realistic one:
+
+> FS25 `Wearable.calculateRepairPrice(price, damage) = price × damage^1.5 × 0.09`
+
 `IronHorseRealData.repair`:
 
 | Constant | Value | Basis |
 |----------|-------|-------|
-| `workshopLaborEURperH` | 100 | DE ag-workshop midpoint (70–130) |
-| `workshopRepairFraction` | 0.06 | a full 0→1 workshop repair ≈ 6 % of price — a heavy repair event inside the 5–10 %/yr band; lifetime ~25 % ≈ four such events |
-| `fieldRepairCostRatio` | 0.45 | a field repair ≈ 45 % of the workshop cost for the same damage delta (own labour, basic parts, no margin) |
+| `workshopLaborEURperH` | 100 | real DE ag-workshop midpoint (70–130) — context/sanity |
+| `lifetimeRepairFraction` | 0.25 | real: lifetime repair ≈ 25 % of list price — context |
+| `fullRepairFraction` | 0.09 | FS25's own: up to 9 % of price at full damage |
+| `repairExponent` | 1.5 | FS25's own: rewards frequent low-damage repairs |
+| `fieldRepairCostRatio` | 0.45 | a field repair ≈ 45 % of the workshop's marginal cost |
 
-`ToolboxModule.CFG` derives from these (no magic numbers):
-- `WORKSHOP_REPAIR_FRACTION = 0.06`
-- `FIELD_COST_FACTOR = 0.06 × 0.45 = 0.027`
+- `workshopRepairCost(damage) = price × damage^1.5 × 0.09` (= FS25's own price).
+- `fieldRepairCost(damage) = 0.45 × [workshopRepairCost(damage) − workshopRepairCost(afterRepair)]`
+  — a discount on the marginal cost of just the chunk the field repair removes.
 
 ## Worked example (a €150 000 tractor at 90 % damage)
 
-- Field repair removes 0.35 damage (→ 0.55), cost = `0.35 × 150 000 × 0.027 ≈ €1 420`.
-- Full workshop repair of that same 0.35 chunk = `0.35 × 150 000 × 0.06 ≈ €3 150`.
-- Field ≈ 45 % of the workshop cost — meaningful money, but the cheaper "limp it
-  along" option, exactly the intended trade-off.
+- Field repair removes 0.35 damage: 0.90 → 0.55.
+- Workshop cost at 0.90 = `150 000 × 0.90^1.5 × 0.09 ≈ €11 530`; at 0.55 ≈ €5 510.
+- Marginal (the 0.90→0.55 chunk) ≈ €6 020; **field cost = 0.45 × 6 020 ≈ €2 710**.
+- A full workshop repair (0.90→0) would be ≈ €11 530. The field repair is the
+  cheaper, partial "limp it along" option — priced in the game's own currency of
+  repair, exactly the intended trade-off.
 
-## Still to tune in-game (the settings, not the prices)
+## Still to tune in-game (the feel, not the prices)
 
-The **prices** are now grounded. The **gameplay settings** — how much damage one
-field repair removes (`FIELD_REPAIR_AMOUNT` 0.35), the floor it can't beat
-(`FIELD_REPAIR_FLOOR` 0.15 = 85 % condition), and whether the numbers *feel* right
-against FS25's own economy — are Michael's in-game calibration, together with
-wiring the actual repair action (input → `setDamageAmount` + `addMoney`). See
-`docs/INGAME_PHYSICS_PLAN.md` for the action-wiring + the security rules on never
-trusting a client-sent damage/price.
+The action is **wired** (Shift+R → a server-authoritative repair + charge; the
+server reads damage + price itself, never a client value). The **prices** are
+grounded in FS25's own curve. What remains is feel: the key choice, the cost
+against FS25's economy in practice, and the gameplay settings — how much one field
+repair removes (`FIELD_REPAIR_AMOUNT` 0.35) and the floor it can't beat
+(`FIELD_REPAIR_FLOOR` 0.15 = 85 % condition). MP correctness (client press → server
+applies → every client sees the lower damage + the charge) is Michael's
+dedicated-server test. The money-path security rules are enforced in code and
+noted in `docs/INGAME_PHYSICS_PLAN.md`.

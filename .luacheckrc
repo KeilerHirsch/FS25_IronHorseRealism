@@ -9,6 +9,7 @@ globals = {
     "IronHorseModule",
     "IronHorseSpecialization",
     "IronHorseSyncEvent",
+    "ToolboxRepairEvent",
     "IronHorseConfig",
     "IronHorseRealData",
     "IronHorseHud",
@@ -35,6 +36,7 @@ read_globals = {
     "XMLFile", "InputAction", "source", "renderText", "setTextColor", "setTextBold",
     "setTextAlignment", "RenderText", "drawFilledRect",
     "updateDifferential",
+    "MoneyType", "g_farmManager", "g_inputBinding",
 }
 
 -- Tests load the mod with stubbed engine globals.

@@ -26,6 +26,7 @@ function IronHorseSpecialization.registerEventListeners(vehicleType)
     SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", IronHorseSpecialization)
     SpecializationUtil.registerEventListener(vehicleType, "saveToXMLFile", IronHorseSpecialization)
     SpecializationUtil.registerEventListener(vehicleType, "onDraw", IronHorseSpecialization)
+    SpecializationUtil.registerEventListener(vehicleType, "onRegisterActionEvents", IronHorseSpecialization)
 end
 
 function IronHorseSpecialization:onLoad(savegame)
@@ -36,6 +37,7 @@ function IronHorseSpecialization:onLoad(savegame)
     end
     spec.modules = IronHorseModuleRegistry.getSupported(self)
     spec.state = {}
+    spec.actionEvents = {}   -- shared per-vehicle input action-event table (client)
     for _, m in ipairs(spec.modules) do
         local state = {}
         spec.state[m.name] = state
@@ -108,4 +110,24 @@ function IronHorseSpecialization:onDraw(_isActiveForInput, _isActiveForInputIgno
         end
     end
     IronHorseHud.renderCluster(self, indicators)
+end
+
+---Register the modules' input action events for the vehicle the local player is
+-- controlling. Client-side only; the shared actionEvents table is cleared and
+-- rebuilt each time input activation changes, so keys bind only for the entered
+-- vehicle. Each module registers whatever bindings it needs.
+function IronHorseSpecialization:onRegisterActionEvents(_isActiveForInput, isActiveForInputIgnoreSelection)
+    if self.isClient ~= true then
+        return
+    end
+    local spec = self[SPEC]
+    if spec == nil or spec.modules == nil then
+        return
+    end
+    self:clearActionEventsTable(spec.actionEvents)
+    if isActiveForInputIgnoreSelection then
+        for _, m in ipairs(spec.modules) do
+            m:onRegisterActionEvents(self, spec.state[m.name], spec.actionEvents)
+        end
+    end
 end

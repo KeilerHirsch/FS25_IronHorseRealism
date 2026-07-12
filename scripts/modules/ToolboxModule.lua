@@ -8,22 +8,23 @@
 -- the realism chain: the machine wears (engine + usage), and here you keep it
 -- going between workshop visits.
 --
--- Like visualDirt, this REUSES the engine's own system instead of re-modelling it:
--- Farming Simulator already tracks damage/wear (the Wearable spec — getDamage-
--- Amount() 0..1, repairVehicle(), engine-synced + saved). This module reads that
--- damage for the cockpit HUD and supplies the pure field-repair maths (how much a
--- makeshift fix restores, what it costs). No state / sync / save of its own — the
--- engine owns the damage value.
+-- Like visualDirt, this REUSES the engine's own systems instead of re-modelling
+-- them: Farming Simulator already tracks damage (the Wearable spec —
+-- getDamageAmount() 0..1, setDamageAmount, engine-synced + saved) and prices a
+-- repair (Wearable.calculateRepairPrice = price * damage^1.5 * 0.09). This module
+-- reads the damage for the cockpit HUD, reuses that repair curve so its costs feel
+-- native to the economy, and adds the field-repair action.
 --
--- FINE-TUNING TODO (deferred — the consequence + the price calibration Michael
--- wants next, both need real numbers + in-game feel):
---   1. ACTION (input): a "field repair" bind that, on the SERVER, applies
---      fieldRepairResult via setDamageAmount and charges fieldRepairCost via
---      g_currentMission:addMoney (a workshop visit still does the full repair).
---   2. PRICES: the field + workshop cost factors are now grounded in real
---      workshop data (IronHorseRealData.repair — German ag-workshop €/h, the
---      lifetime-repair ~25%-of-price rule, field ~45% of the workshop cost). The
---      remaining work is feel-tuning them against FS25's own economy in-game.
+-- ACTION (wired): a "field repair" input (Shift+R by default). The client callback
+-- sends a ToolboxRepairEvent; the SERVER (performFieldRepair) reads the damage and
+-- the price FROM THE VEHICLE ITSELF (never a client-supplied value), charges the
+-- owner farm FS25-style (MoneyType.VEHICLE_REPAIR) and lowers the damage to the
+-- field-repair floor. Server-authoritative; setDamageAmount + addMoney are engine-
+-- replicated, so all clients see the result.
+--
+-- IN-GAME TODO (needs Michael's dedicated-server test, not headless-verifiable):
+-- key feel, cost feel vs FS25's economy, and MP correctness (client press -> server
+-- applies -> every client sees the lower damage + the charge on the owner farm).
 --
 
 ToolboxModule = IronHorseModule.new("toolbox")
@@ -36,11 +37,13 @@ ToolboxModule.CFG = {
     FIELD_REPAIR_AMOUNT  = 0.35,   -- damage removed by one field repair
     MIN_DAMAGE_TO_REPAIR = 0.10,   -- below this it isn't worth a field repair
 
-    -- Economics grounded in real workshop data (IronHorseRealData.repair): a full
-    -- 0->1 workshop repair costs WORKSHOP_REPAIR_FRACTION of the machine price; a
-    -- field repair costs fieldRepairCostRatio of that for the same damage delta.
-    WORKSHOP_REPAIR_FRACTION = REPAIR.workshopRepairFraction,                    -- 0.06
-    FIELD_COST_FACTOR        = REPAIR.workshopRepairFraction * REPAIR.fieldRepairCostRatio, -- 0.027
+    -- Economics reuse FS25's OWN repair curve (price * damage^EXP * FRACTION, from
+    -- Wearable.calculateRepairPrice) so costs feel native; a field repair is a
+    -- discount on the marginal cost of the damage chunk it removes. See
+    -- IronHorseRealData.repair (the 9% also matches real DE workshop data).
+    FULL_REPAIR_FRACTION    = REPAIR.fullRepairFraction,   -- 0.09 (FS25 at full damage)
+    REPAIR_EXPONENT         = REPAIR.repairExponent,        -- 1.5  (FS25 curve)
+    FIELD_REPAIR_COST_RATIO = REPAIR.fieldRepairCostRatio,  -- 0.45 (field vs workshop)
 
     DAMAGE_WARN = 0.50,            -- HUD warning band
     DAMAGE_CRIT = 0.75,            -- HUD critical band (needs attention)
@@ -67,21 +70,32 @@ function ToolboxModule.canFieldRepair(damage, cfg)
         and ToolboxModule.fieldRepairResult(damage, cfg) < damage
 end
 
----Pure: cost of a field repair = the damage fraction it removes, scaled by the
--- vehicle price and the (placeholder) cost factor. @return number cost
-function ToolboxModule.fieldRepairCost(damage, vehiclePrice, cfg)
-    local repaired = damage - ToolboxModule.fieldRepairResult(damage, cfg)
-    if repaired < 0 then
-        repaired = 0
-    end
-    return repaired * (vehiclePrice or 0) * cfg.FIELD_COST_FACTOR
+---Pure: FS25's own workshop repair price for a damage/price (mirrors
+-- Wearable.calculateRepairPrice = price * damage^1.5 * 0.09). Reused so IronHorse
+-- costs are native to the game economy. @return number cost
+function ToolboxModule.workshopRepairCost(damage, vehiclePrice, cfg)
+    local d = damage or 0
+    if d < 0 then d = 0 end
+    return (vehiclePrice or 0) * (d ^ cfg.REPAIR_EXPONENT) * cfg.FULL_REPAIR_FRACTION
 end
 
----Pure: cost of a FULL workshop repair (damage -> 0) — the pricier, complete
--- alternative to a partial field repair. Grounded in the workshop-repair fraction
--- of the machine price. @return number cost
-function ToolboxModule.workshopRepairCost(damage, vehiclePrice, cfg)
-    return (damage or 0) * (vehiclePrice or 0) * cfg.WORKSHOP_REPAIR_FRACTION
+---Pure: cost of a partial FIELD repair = a discount (FIELD_REPAIR_COST_RATIO) on
+-- the workshop's MARGINAL cost for the damage chunk it removes. @return number cost
+function ToolboxModule.fieldRepairCost(damage, vehiclePrice, cfg)
+    local after = ToolboxModule.fieldRepairResult(damage, cfg)
+    local marginal = ToolboxModule.workshopRepairCost(damage, vehiclePrice, cfg)
+                   - ToolboxModule.workshopRepairCost(after, vehiclePrice, cfg)
+    if marginal < 0 then
+        marginal = 0
+    end
+    return marginal * cfg.FIELD_REPAIR_COST_RATIO
+end
+
+---Pure: can the farm afford it? Fail CLOSED — an unknown/unresolved balance
+-- blocks the repair (we can't confirm funds, and must not charge a farm we
+-- couldn't resolve). A known balance must cover the cost. @return boolean
+function ToolboxModule.canAfford(cost, balance)
+    return balance ~= nil and balance >= (cost or 0)
 end
 
 ---Pure: damage (0..1) → HUD severity. @return number
@@ -98,9 +112,103 @@ function ToolboxModule:isSupported(vehicle)
     return vehicle ~= nil and vehicle.getDamageAmount ~= nil
 end
 
--- No onLoad / onUpdate / sync / save: damage is owned, replicated and persisted
--- by the engine's Wearable spec. This module only reads it. (The deferred repair
--- action will add a server-side input handler — see the header TODO.)
+-- No onLoad / onUpdate / sync / save: damage is owned, replicated and persisted by
+-- the engine's Wearable spec. This module reads it and drives the repair action.
+
+---Client: bind the field-repair key for the vehicle the player controls.
+function ToolboxModule:onRegisterActionEvents(vehicle, _state, actionEvents)
+    if not IronHorseConfig.isModuleEnabled(self.name) then
+        return
+    end
+    if vehicle == nil or vehicle.addActionEvent == nil then
+        return
+    end
+    local ok, actionEventId = vehicle:addActionEvent(actionEvents, InputAction.IH_FIELD_REPAIR,
+        vehicle, ToolboxModule.onFieldRepairEvent, false, true, false, true, nil)
+    if ok and actionEventId ~= nil and g_inputBinding ~= nil then
+        g_inputBinding:setActionEventTextVisibility(actionEventId, true)
+        if g_i18n ~= nil then
+            g_inputBinding:setActionEventText(actionEventId, g_i18n:getText("input_IH_FIELD_REPAIR"))
+        end
+    end
+end
+
+---Client callback (key pressed on the entered vehicle): ask the server to repair.
+function ToolboxModule.onFieldRepairEvent(vehicle, _actionName, _inputValue, _callbackState, _isAnalog)
+    if vehicle ~= nil then
+        ToolboxRepairEvent.sendRequest(vehicle)
+    end
+end
+
+---Access control (server): may the requesting connection field-repair this
+-- vehicle? A relayed CLIENT request must come from a player whose farm OWNS the
+-- vehicle — otherwise a cheat client could name any net-id and spend a rival
+-- farm's money. Fail CLOSED: any broken link (no userManager, unknown user, no
+-- farm, mismatch) denies. A nil connection = the local/host server player, trusted.
+-- @return boolean
+function ToolboxModule.isConnectionEntitled(vehicle, connection)
+    if connection == nil then
+        return true   -- local/host action, not a relayed client request
+    end
+    if vehicle == nil or vehicle.getOwnerFarmId == nil then
+        return false
+    end
+    -- Proven pattern (mirrors ADS_ServiceRequestEvent): resolve the sender's
+    -- userId from the connection, its farm via the farm manager, and require it to
+    -- be the vehicle's owner farm. Any missing link fails closed.
+    if g_currentMission == nil or g_currentMission.userManager == nil
+        or g_farmManager == nil or g_farmManager.getFarmByUserId == nil then
+        return false
+    end
+    local userId = g_currentMission.userManager:getUserIdByConnection(connection)
+    local farm = g_farmManager:getFarmByUserId(userId)
+    return farm ~= nil and farm.farmId == vehicle:getOwnerFarmId()
+end
+
+---SERVER: perform the field repair authoritatively. Reads damage + price from the
+-- vehicle itself (never a client value), verifies the requester's farm owns the
+-- vehicle, charges that farm FS25-style, and lowers the damage. No-op if
+-- unauthorised, not worth it, or unaffordable.
+-- @param connection nil for a local/host request, else the requesting client's
+-- connection (which must be entitled).
+function ToolboxModule.performFieldRepair(vehicle, connection)
+    if vehicle == nil or vehicle.getDamageAmount == nil or vehicle.setDamageAmount == nil then
+        return
+    end
+    if vehicle.spec_ironHorseRealism == nil then
+        return   -- only IronHorse-managed vehicles, not any Wearable object (trailers/implements)
+    end
+    if not IronHorseConfig.isModuleEnabled(ToolboxModule.name) then
+        return
+    end
+    if not ToolboxModule.isConnectionEntitled(vehicle, connection) then
+        return   -- a client may only repair a vehicle its own farm owns
+    end
+    local cfg = ToolboxModule.CFG
+    local damage = vehicle:getDamageAmount() or 0
+    if not ToolboxModule.canFieldRepair(damage, cfg) then
+        return
+    end
+    local price = (vehicle.getPrice ~= nil and vehicle:getPrice()) or 0
+    local cost = ToolboxModule.fieldRepairCost(damage, price, cfg)
+    local farmId = (vehicle.getOwnerFarmId ~= nil and vehicle:getOwnerFarmId()) or 0
+
+    local balance = nil
+    if g_farmManager ~= nil and g_farmManager.getFarmById ~= nil then
+        local farm = g_farmManager:getFarmById(farmId)
+        if farm ~= nil then
+            balance = farm.money
+        end
+    end
+    if not ToolboxModule.canAfford(cost, balance) then
+        return
+    end
+
+    if g_currentMission ~= nil and g_currentMission.addMoney ~= nil and MoneyType ~= nil then
+        g_currentMission:addMoney(-cost, farmId, MoneyType.VEHICLE_REPAIR, true, true)
+    end
+    vehicle:setDamageAmount(ToolboxModule.fieldRepairResult(damage, cfg), true)
+end
 
 function ToolboxModule:getHudIndicators(vehicle, _state)
     if not IronHorseConfig.isModuleEnabled(self.name) then

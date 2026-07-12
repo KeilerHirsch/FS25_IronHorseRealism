@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="108">
     <author>KeilerHirsch</author>
-    <version>0.2.0.0</version>
+    <version>0.2.1.0</version>
     <title>
         <en>Iron Horse Realism</en>
         <de>Iron Horse Realism</de>
@@ -23,4 +23,18 @@ Dieser Mod ERSETZT separate Verschleiss-/Fahrhilfe-/Reifendruck-Mods und hat tec
     <extraSourceFiles>
         <sourceFile filename="scripts/IronHorseRealism.lua"/>
     </extraSourceFiles>
+    <actions>
+        <action name="IH_FIELD_REPAIR"/>
+    </actions>
+    <inputBinding>
+        <actionBinding action="IH_FIELD_REPAIR">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_r"/>
+        </actionBinding>
+    </inputBinding>
+    <l10n>
+        <text name="input_IH_FIELD_REPAIR">
+            <en>Field repair (IronHorse)</en>
+            <de>Feldreparatur (IronHorse)</de>
+        </text>
+    </l10n>
 </modDesc>

@@ -44,6 +44,12 @@ function IronHorseModule:onReadStream(_vehicle, _state, _streamId, _connection) 
 function IronHorseModule:saveToXML(_vehicle, _state, _xmlFile, _key) end
 function IronHorseModule:loadFromXML(_vehicle, _state, _xmlFile, _key) end
 
+---Register the module's input action events for the entered vehicle (client
+-- side). Called by the spec on onRegisterActionEvents with the shared per-vehicle
+-- actionEvents table; a module that wants a key binding overrides this and calls
+-- vehicle:addActionEvent(actionEvents, InputAction.X, ...). Default: none.
+function IronHorseModule:onRegisterActionEvents(_vehicle, _state, _actionEvents) end
+
 ---Declare this module's HUD indicators for the unified cockpit cluster.
 -- Return nil for "nothing to show", or a flat list of indicator tables:
 --   { id = "...", label = "MOTOR", value = "92%"?, status = "..."?, severity = IronHorseHud.SEV_* }
