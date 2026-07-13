@@ -12,3 +12,13 @@ __pycache__/
 .idea/
 Thumbs.db
 .DS_Store
+
+# --- Secrets / PII (NEVER commit) ---
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+*.pfx
+Local State
+Cookies

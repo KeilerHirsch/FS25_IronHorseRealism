@@ -1,0 +1,15 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.1
+      - name: parse-check (hard gate — every .lua must compile)
+        run: find . -path ./.git -prune -o -name '*.lua' -print0 | xargs -0 -r -n1 luac5.1 -p
+      - name: luacheck (advisory)
+        run: |
+          sudo apt-get install -y luarocks && sudo luarocks install luacheck || true
+          luacheck . || true
