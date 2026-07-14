@@ -1,0 +1,23 @@
+# Line-ending normalization (repo standard §6) — the CRLF cure, at the source.
+* text=auto eol=lf
+
+# Windows-native scripts must stay CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh  text eol=lf
+
+# Binary assets — never diff/merge, never touch line endings
+*.exe binary
+*.dll binary
+*.zip binary
+*.7z  binary
+*.dds binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.gdm binary
+*.grle binary

@@ -1,0 +1,12 @@
+# Dependabot — dependency & GitHub-Actions freshness (repo standard §6; OpenSSF Baseline).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        update-types:
+          - "minor"
+          - "patch"
