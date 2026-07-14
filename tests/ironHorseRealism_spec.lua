@@ -116,7 +116,7 @@ describe("IronHorseRealData.lerp", function()
     it("interpolates and clamps", function()
         assert.are.equal(0.8, _G.IronHorseRealData.lerp(0.8, 1.6, 0))
         assert.are.equal(1.6, _G.IronHorseRealData.lerp(0.8, 1.6, 1))
-        assert.are.equal(1.2, _G.IronHorseRealData.lerp(0.8, 1.6, 0.5))
+        assert.is_true(math.abs(_G.IronHorseRealData.lerp(0.8, 1.6, 0.5) - 1.2) < 1e-9)  -- float midpoint: 0.8+(1.6-0.8)*0.5 rounds, so compare with tolerance
         assert.are.equal(0.8, _G.IronHorseRealData.lerp(0.8, 1.6, -5)) -- clamp low
         assert.are.equal(1.6, _G.IronHorseRealData.lerp(0.8, 1.6, 5))  -- clamp high
     end)
