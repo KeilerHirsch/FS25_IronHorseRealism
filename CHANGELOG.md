@@ -4,6 +4,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.2.0] - 2026-07-14 — maintenance (no gameplay change)
+
+Housekeeping only — the mod a player installs is byte-for-byte the same behaviour as
+0.2.1.0. Cut for release/version consistency after a repo-wide audit.
+
+### Changed
+- Fixed a brittle unit-test assertion: the `lerp` midpoint test used exact float
+  equality on `0.8+(1.6-0.8)*0.5` (which rounds to `1.2000000000000002`); it now
+  compares with a `1e-9` tolerance. The spec suite was executed for the first time
+  (via Lua 5.1) and is green — 37/37.
+- Added repo-standard hygiene files (CONTRIBUTING / SECURITY / CODE_OF_CONDUCT / CI).
+- OPSEC: removed an operator first name from docs/comments.
+
 ## [0.2.1.0] - 2026-07-12 — field-repair action (early access)
 
 ### Added
