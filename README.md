@@ -9,7 +9,7 @@ tire pressure, electrical, dirt/visuals and a field-repair toolbox — into **on
 coherent drivetrain chain** with **one HUD**.
 
 <p align="center">
-  <img src="assets/showcase.svg" width="900" alt="Iron Horse Realism — a modular vehicle-realism framework for FS25. engineStall is live; engineHealth, drivetrain, tyres, electrical, visualDirt and toolbox are built on the backbone with their cockpit readouts, physics/consequence tuning in progress. One cockpit HUD colours each system by severity (cold / normal / warning / critical)."/>
+  <img src="assets/showcase.gif" width="900" alt="Iron Horse Realism — a modular vehicle-realism framework for FS25. engineStall is live; engineHealth, drivetrain, tyres, electrical, visualDirt and toolbox are built on the backbone with their cockpit readouts, physics/consequence tuning in progress. One cockpit HUD colours each system by severity (cold / normal / warning / critical)."/>
 </p>
 
 > **Early access (0.1.x):** all seven modules are built on the modular backbone,
